@@ -1,0 +1,7 @@
+### Test de l'API d'analyse SERP
+POST http://127.0.0.1:5000/api/analyze-serp
+Content-Type: application/json
+
+{
+    "keyword": "les 12 étapes du burn-out"
+}
