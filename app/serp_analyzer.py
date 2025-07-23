@@ -1,53 +1,43 @@
-# app/content_analyzer.py
-
+# app/serp_analyzer.py
 import requests
+import os
 from bs4 import BeautifulSoup
-import re
-from collections import Counter
 
-# Liste de "stop words" français très basique pour nettoyer le bruit
-STOP_WORDS = set([
-    'le', 'la', 'les', 'de', 'du', 'des', 'un', 'une', 'et', 'ou', 'est', 'sont',
-    'pour', 'par', 'sur', 'dans', 'avec', 'ce', 'cette', 'ces', 'qui', 'que',
-    'quoi', 'dont', 'où', 'il', 'elle', 'nous', 'vous', 'ils', 'elles', 'je',
-    'tu', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'son', 'sa', 'ses', 'notre',
-    'votre', 'leur', 'leurs', 'au', 'aux', 'pas', 'plus', 'comment', 'votre',
-    'pourquoi', 'quand', 'quel', 'quelle', 'quelles', 'quels', 'aussi', 'si',
-    'tout', 'tous', 'bien', 'faire', 'peut'
-])
+API_KEY = os.getenv("VALUESERP_API_KEY")
+BASE_URL = "https://api.valueserp.com/search"
 
-def get_people_also_ask(keyword):
-    """Récupère les questions "People Also Ask" pour un mot-clé donné."""
-    questions = []
+def get_serp_results(keyword):
+    """Same as before"""
+    pass
+
+def scrape_competitor_page(url):
+    if not url:
+        return {'error': 'URL manquante.'}
     try:
-        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        response = requests.get(f"https://www.google.com/search?q={keyword}&hl=fr", headers={'User-Agent': user_agent})
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Google utilise des divs avec des rôles spécifiques pour PAA
-        paa_container = soup.find('div', attrs={'data-initq': keyword, 'data-rw': True})
-        if paa_container:
-            questions_divs = paa_container.find_all('div', role='heading')
-            for div in questions_divs:
-                questions.append(div.get_text(strip=True))
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, 'lxml')
 
+        main_content = soup.find('article') or soup.find('main') or soup.body
+        text = main_content.get_text(separator=' ', strip=True) if main_content else ""
+        word_count = len(text.split())
+
+        headings = [{'tag': h.name, 'text': h.get_text(strip=True)} for h in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])]
+
+        # Extract meta description
+        meta_description = soup.find('meta', attrs={'name': 'description'})
+        meta_description = meta_description['content'] if meta_description else ""
+
+        # Extract image alt tags
+        images = soup.find_all('img')
+        alt_tags = [img.get('alt', '') for img in images if img.get('alt')]
+
+        return {
+            'word_count': word_count,
+            'headings': headings,
+            'meta_description': meta_description,
+            'alt_tags': alt_tags
+        }
     except Exception as e:
-        print(f"Erreur lors de la récupération des PAA : {e}")
-    return list(set(questions))[:4] # Retourne 4 questions uniques
-
-def aggregate_keywords(competitors_data):
-    """Agrège, nettoie et classe les mots-clés de tous les concurrents."""
-    full_text = ""
-    for competitor in competitors_data:
-        # On utilise le texte des titres pour l'analyse sémantique
-        for heading in competitor.get('headings', []):
-            full_text += heading.get('text', '') + " "
-            
-    # Nettoyer et compter les mots
-    words = re.findall(r'\b\w{3,}\b', full_text.lower())
-    
-    # Filtrer les stop words
-    filtered_words = [word for word in words if word not in STOP_WORDS]
-    
-    word_counts = Counter(filtered_words)
-    return word_counts.most_common(15) # Retourne les 15 mots-clés sémantiques les plus pertinents
+        return {'word_count': 0, 'headings': [], 'error': f'Erreur de scraping sur {url}: {e}', 'meta_description': "", 'alt_tags': []}

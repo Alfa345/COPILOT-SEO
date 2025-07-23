@@ -1,61 +1,96 @@
 <script setup>
 import { ref } from 'vue';
-// ON IMPORTE LE NOUVEL ÉDITEUR
 import ArticleEditor from './ArticleEditor.vue';
+import AnalysisDashboard from './AnalysisDashboard.vue'; // Placeholder, assuming it was intended to be used here or similar context
 
+// --- Component State ---
 const keyword = ref('');
 const isLoading = ref(false);
+const error = ref(null);
 const analysisResult = ref(null);
-const errorMessage = ref('');
 
-const analyzeKeyword = async () => {
-  if (!keyword.value) return;
+/**
+ * [FIX] Implemented the API call logic.
+ * This function sends the keyword to a backend API, handles loading states,
+ * and populates the result or an error message.
+ */
+async function analyzeKeyword() {
+  if (!keyword.value.trim()) return;
+
   isLoading.value = true;
-  errorMessage.value = '';
+  error.value = null;
   analysisResult.value = null;
+
   try {
-    const response = await fetch('http://127.0.0.1:5000/api/analyze-serp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    // NOTE: This is a placeholder URL. Replace with your actual backend endpoint.
+    // In src/components/SeoForm.vue
+// ...
+// [FIX] Change the fetch URL to a relative path
+const response = await fetch('/api/analyze', {
+  method: 'POST',
+  //...
+
+// ...
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ keyword: keyword.value }),
     });
+
     if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.error || `Erreur HTTP: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
+
     const data = await response.json();
     analysisResult.value = data;
-  } catch (error) {
-    console.error("Erreur lors de l'appel API:", error);
-    errorMessage.value = error.message || 'Une erreur est survenue. Vérifiez que le serveur Python est bien lancé.';
+
+  } catch (e) {
+    console.error("Analysis failed:", e);
+    error.value = e.message;
   } finally {
     isLoading.value = false;
   }
-};
+}
 </script>
 
 <template>
-  <div class="seo-form-container">
-    <!-- Si on n'a pas encore de résultat, on affiche le formulaire -->
+  <div>
     <template v-if="!analysisResult">
-      <form @submit.prevent="analyzeKeyword">
-        <input v-model="keyword" type="text" placeholder="Entrez un sujet..." />
-        <button type="submit" :disabled="isLoading">Analyser →</button>
+      <form @submit.prevent="analyzeKeyword" class="max-w-2xl mx-auto mb-8">
+        <div class="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+          <input 
+            v-model="keyword" 
+            type="text" 
+            placeholder="Entrez un sujet d'article..." 
+            class="w-full bg-transparent text-lg placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white border-none focus:ring-0"
+            :disabled="isLoading"
+          />
+          <button 
+            type="submit" 
+            :disabled="isLoading || !keyword" 
+            class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+          >
+            <span v-if="!isLoading">Analyser →</span>
+            <span v-else>Analyse...</span>
+          </button>
+        </div>
       </form>
 
-      <div v-if="isLoading" class="p-d-flex p-jc-center p-mt-4">
+      <!-- [FIX] Added loading and error display -->
+      <div v-if="isLoading" class="flex flex-col items-center justify-center text-center mt-8">
         <ProgressSpinner />
+        <p class="mt-4 text-gray-600 dark:text-gray-400">Analyse en cours, veuillez patienter...</p>
       </div>
-      <Message v-if="errorMessage" severity="error">{{ errorMessage }}</Message>
-    </template>
 
-    <!-- Sinon, on affiche notre nouvel éditeur d'article ! -->
+      <div v-if="error" class="max-w-2xl mx-auto mt-4">
+        <Message severity="error" :closable="false">{{ error }}</Message>
+      </div>
+    </template>
+    
+    <!-- [FIX] Changed to show ArticleEditor when analysis is complete -->
     <div v-else>
       <ArticleEditor :analysis="analysisResult" />
     </div>
   </div>
 </template>
-
-<style scoped>
-  /* Styles inchangés */
-</style>

@@ -23,41 +23,46 @@ const articleContent = ref('');
     </aside>
     
     <main class="center-pane">
-      <!-- v-model lie le contenu de l'éditeur à notre variable articleContent -->
       <TextEditor v-model="articleContent" />
     </main>
 
     <aside class="right-pane">
-       <AiCopilot :article-context="articleContent" />
+       <!-- [FIX] Pass the 'analysis' prop to the AiCopilot component -->
+       <AiCopilot :analysis="analysis" :article-context="articleContent" />
     </aside>
   </div>
 </template>
 
-/* frontend/src/components/ArticleEditor.vue */
 <style scoped>
 .editor-layout {
   display: flex;
   gap: 1.5rem;
   width: 100%;
-  height: 80vh;
-  background-color: var(--background-secondary); /* <-- Utiliser la variable */
+  /* [FIX] The height was set to 80vh, which might be too restrictive.
+     A min-height is often more flexible. Let's keep vh for a full-screen feel. */
+  height: calc(100vh - 200px); /* Adjust based on header height */
+  background-color: var(--background-primary);
   padding: 1rem;
   border-radius: 8px;
 }
 
-
 .left-pane {
-  flex: 0 0 25%; /* 25% de la largeur, ne grandit pas, ne rétrécit pas */
+  flex: 0 0 25%;
   overflow-y: auto;
+  background-color: var(--background-secondary);
+  border-radius: 8px;
 }
 
 .center-pane {
-  flex: 1 1 50%; /* 50% de la largeur, grandit et rétrécit */
+  flex: 1 1 50%;
 }
 
 .right-pane {
-  flex: 0 0 25%; /* 25% de la largeur */
+  flex: 0 0 25%;
   display: flex;
   flex-direction: column;
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  overflow: hidden; /* To contain tab content */
 }
 </style>
