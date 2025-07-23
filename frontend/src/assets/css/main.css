@@ -8,26 +8,7 @@
   directly part of the default Tailwind palette.
 */
 @layer base {
-  :root {
-    --background-primary: #ffffff;
-    --background-secondary: #f8f9fa;
-    --background-tertiary: #e9ecef;
-    --text-primary: #212529;
-    --text-secondary: #495057;
-    --text-accent: #007bff;
-    --border-color: #dee2e6;
-  }
-
-  .dark {
-    --background-primary: #121212;
-    --background-secondary: #1e1e1e;
-    --background-tertiary: #2a2a2a;
-    --text-primary: #e0e0e0;
-    --text-secondary: #a0a0a0;
-    --text-accent: #3b82f6; /* A nice blue for dark mode */
-    --border-color: #444444;
-  }
-}
+/* Removed unnecessary CSS variables for Tailwind styles */
 
 
 /* Styles de base pour le body en mode sombre et clair */
@@ -35,4 +16,5 @@ body {
   @apply bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 transition-colors duration-300;
   background-color: var(--background-primary);
   color: var(--text-primary);
+ }
 }

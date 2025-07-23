@@ -70,59 +70,72 @@ const seoScore = computed(() => {
 </script>
 
 <template>
-  <div class="brief-container">
+  <div class="brief-container animate-fade-in">
     <div class="score-section">
-      <h3>Score SEO</h3>
+      <h3 class="font-bold text-lg mb-2 flex items-center gap-2">
+        <span class="inline-block w-6 h-6 bg-gradient-to-tr from-blue-400 to-purple-400 rounded-full mr-1"></span>
+        Score SEO
+      </h3>
       <div class="score-circle">
         <span class="score-value">{{ seoScore }}</span>
         <span class="score-total">/ 100</span>
       </div>
       <progress class="score-progress" :value="seoScore" max="100"></progress>
+      <div class="score-bar mt-2 w-full h-3 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
+        <div :style="{width: seoScore + '%'}" class="h-full rounded-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 transition-all duration-500"></div>
+      </div>
     </div>
 
     <div class="checklist-section">
-      <h4><span class="icon">🎯</span> Objectifs</h4>
+      <h4 class="font-semibold text-base mb-2 flex items-center gap-2"><span class="icon">🎯</span> Objectifs</h4>
       <div class="check-item" :class="{ 'is-done': wordCount >= targetWordCount }">
         <span class="check-icon">{{ wordCount >= targetWordCount ? '✅' : '⬜️' }}</span>
-        <span class="text">Nombre de mots : {{ wordCount }} / ~{{ targetWordCount }}</span>
+        <span class="text">Nombre de mots : <span class="font-bold">{{ wordCount }}</span> / <span class="text-blue-500">~{{ targetWordCount }}</span></span>
       </div>
     </div>
-    
+
     <div class="checklist-section">
-      <h4><span class="icon">🔑</span> Mots-clés sémantiques</h4>
+      <h4 class="font-semibold text-base mb-2 flex items-center gap-2"><span class="icon">🔑</span> Mots-clés sémantiques</h4>
       <div class="tags-list">
-        <div v-for="kw in keywordChecklist" :key="kw.text" class="tag" :class="{ 'is-used': kw.used }">
-          {{ kw.text }} ({{ kw.count }})
+        <div v-for="kw in keywordChecklist" :key="kw.text" class="tag transition-all duration-300" :class="{ 'is-used': kw.used }">
+          <span class="inline-block mr-1">{{ kw.used ? '✅' : '⬜️' }}</span>
+          <span class="font-semibold">{{ kw.text }}</span>
+          <span class="ml-1 text-xs text-gray-500">({{ kw.count }}/{{ kw.target }})</span>
         </div>
       </div>
     </div>
 
     <div class="checklist-section">
-      <h4><span class="icon">🏗️</span> Structure de l'article (Plan)</h4>
-      <div v-for="h in headingChecklist" :key="h.text" class="check-item" :class="{ 'is-done': h.used }">
+      <h4 class="font-semibold text-base mb-2 flex items-center gap-2"><span class="icon">🏗️</span> Structure de l'article (Plan)</h4>
+      <div v-for="h in headingChecklist" :key="h.text" class="check-item transition-all duration-300" :class="{ 'is-done': h.used }">
         <span class="check-icon">{{ h.used ? '✅' : '⬜️' }}</span>
         <span class="text" :class="`heading-level-${h.level}`">{{ h.text }}</span>
       </div>
     </div>
-
   </div>
 </template>
 
 <style scoped>
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(.4,0,.2,1);
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .brief-container {
-  padding: 1rem;
-  background-color: var(--background-secondary);
-  border-radius: 8px;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.85);
+  border-radius: 18px;
+  box-shadow: 0 4px 32px 0 rgba(31, 38, 135, 0.12);
   height: 100%;
   overflow-y: auto;
+  transition: box-shadow 0.3s;
 }
-
 .icon { margin-right: 0.5rem; }
-
-/* --- Score Section --- */
 .score-section {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 .score-circle {
   display: inline-block;
@@ -130,35 +143,23 @@ const seoScore = computed(() => {
   margin: 0.5rem 0;
 }
 .score-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text-accent);
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #7c3aed;
+  letter-spacing: -2px;
 }
 .score-total {
-  font-size: 1rem;
-  color: var(--text-secondary);
+  font-size: 1.1rem;
+  color: #64748b;
 }
-.score-progress {
-  width: 100%;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 8px;
+.score-bar {
+  background: #e0e7ef;
 }
-.score-progress::-webkit-progress-bar {
-  background-color: var(--background-tertiary);
-  border-radius: 4px;
-}
-.score-progress::-webkit-progress-value {
-  background-color: var(--text-accent);
-  border-radius: 4px;
-}
-
-/* --- Checklist Section --- */
 .checklist-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 .checklist-section h4 {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #e0e7ef;
   padding-bottom: 0.5rem;
   margin-bottom: 0.75rem;
 }
@@ -167,40 +168,39 @@ const seoScore = computed(() => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.3rem 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-size: 1rem;
+  color: #64748b;
   transition: all 0.2s ease;
 }
 .check-item.is-done {
-  color: var(--text-primary);
+  color: #22c55e;
   text-decoration: line-through;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 .check-icon {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 .heading-level-H3 {
   padding-left: 1.5rem;
 }
-
-/* --- Tags List --- */
 .tags-list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 .tag {
-  background-color: var(--background-tertiary);
-  color: var(--text-secondary);
-  padding: 0.25rem 0.75rem;
+  background: #f3f4f6;
+  color: #64748b;
+  padding: 0.3rem 1rem;
   border-radius: 16px;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   border: 1px solid transparent;
-  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px 0 rgba(31, 38, 135, 0.07);
 }
 .tag.is-used {
-  background-color: #28a74520; /* Vert transparent */
-  color: #28a745;
-  border-color: #28a745;
+  background: #22c55e22;
+  color: #22c55e;
+  border-color: #22c55e;
+  font-weight: 700;
 }
 </style>

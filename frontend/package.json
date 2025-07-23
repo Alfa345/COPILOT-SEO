@@ -20,6 +20,7 @@
     "@vitejs/plugin-vue": "^5.0.5",
     "primeflex": "^4.0.0",
     "primevue": "^4.3.6",
+    "tailwindcss": "^4.1.11",
     "tailwindcss-primeui": "^0.6.1"
   }
 }
